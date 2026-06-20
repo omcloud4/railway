@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}My Bookings{% endblock %}
+
+{% block content %}
+<section class="booking-page">
+  <div class="section-heading">
+    <div>
+      <h2>My Bookings</h2>
+      <p>All tickets booked with your RailConnect account.</p>
+    </div>
+    <a class="primary-button" href="{{ url_for('index') }}#search">Book New Ticket</a>
+  </div>
+
+  <section class="admin-card">
+    <table>
+      <thead><tr><th>PNR</th><th>Train</th><th>Route</th><th>Date</th><th>Class</th><th>Seats</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for booking in bookings %}
+          <tr>
+            <td>{{ booking.pnr }}</td>
+            <td>{{ booking.train }}</td>
+            <td>{{ booking.route }}</td>
+            <td>{{ booking.date }}</td>
+            <td>{{ booking.class }}</td>
+            <td>{{ booking.seats|join(', ') }}</td>
+            <td>Rs. {{ booking.amount }}</td>
+            <td>{{ booking.status|title }}</td>
+            <td>
+              {% if booking.status != "cancelled" %}
+                <form method="post" action="{{ url_for('cancel_booking', pnr=booking.pnr) }}">
+                  <button class="danger-button" type="submit">Cancel</button>
+                </form>
+              {% else %}
+                -
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="9">No bookings yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</section>
+{% endblock %}

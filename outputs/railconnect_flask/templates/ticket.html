@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Ticket - {{ booking.pnr }}{% endblock %}
+
+{% block content %}
+<section class="ticket-page">
+  <div class="ticket">
+    <div class="ticket-top">
+      <div>
+        <span>Electronic Reservation Slip</span>
+        <h1>{{ booking.pnr }}</h1>
+      </div>
+      <strong>CONFIRMED</strong>
+    </div>
+    <div class="ticket-body">
+      <div class="ticket-route">
+        <div><strong>{{ train.from_name }}</strong><span>{{ train.dep }} | {{ train.from }}</span></div>
+        <i></i>
+        <div><strong>{{ train.to_name }}</strong><span>{{ train.arr }} | {{ train.to }}</span></div>
+      </div>
+      <div class="ticket-grid">
+        <div><span>Train</span><strong>{{ train.name }} #{{ train.id }}</strong></div>
+        <div><span>Journey Date</span><strong>{{ booking.date }}</strong></div>
+        <div><span>Class</span><strong>{{ class_name }}</strong></div>
+        <div><span>Seats</span><strong>{{ booking.seats|join(', ') }}</strong></div>
+      </div>
+      <table class="passenger-table">
+        <thead><tr><th>Passenger</th><th>Status</th><th>Coach/Seat</th></tr></thead>
+        <tbody>
+          {% for passenger in booking.passengers %}
+            <tr><td>{{ passenger }}</td><td>CNF</td><td>{{ booking.seats[loop.index0] }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div class="fare-summary">
+        <span>Base Rs. {{ fare.base }} + GST Rs. {{ fare.tax }} + Convenience Rs. {{ fare.convenience }}</span>
+        <strong>Total Rs. {{ fare.total }}</strong>
+      </div>
+    </div>
+  </div>
+  <a class="primary-button print-hidden" href="{{ url_for('index') }}">Back to Home</a>
+</section>
+{% endblock %}

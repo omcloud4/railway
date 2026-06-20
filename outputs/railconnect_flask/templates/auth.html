@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ "Register" if mode == "register" else "Login" }} - RailConnect{% endblock %}
+
+{% block content %}
+<section class="auth-page">
+  <div class="auth-panel">
+    <div class="auth-copy">
+      <span class="eyebrow">Secure account</span>
+      {% if mode == "register" %}
+        <h1>Create your RailConnect account</h1>
+        <p>Register karke tickets book karein, PNR save karein, aur My Bookings me history dekhein.</p>
+      {% else %}
+        <h1>Login to RailConnect</h1>
+        <p>Apne account se ticket booking, cancellation, PNR status aur admin access manage karein.</p>
+      {% endif %}
+
+    </div>
+
+    {% if mode == "register" %}
+      <form class="auth-card" method="post" action="{{ url_for('register') }}">
+        <h2>Register</h2>
+        <label>Full Name</label>
+        <input name="name" placeholder="Your name" required>
+        <label>Email</label>
+        <input type="email" name="email" placeholder="example@email.com" required>
+        <label>Mobile</label>
+        <input name="mobile" placeholder="9876543210" required>
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Create password" required>
+        <label>Confirm Password</label>
+        <input type="password" name="confirm_password" placeholder="Confirm password" required>
+        <button class="primary-button wide-button" type="submit">Create Account</button>
+        <p>Already registered? <a href="{{ url_for('login') }}">Login here</a></p>
+      </form>
+    {% else %}
+      <form class="auth-card" method="post" action="{{ url_for('login') }}">
+        <h2>Login</h2>
+        <label>Email or Mobile</label>
+        <input name="identity" placeholder="example@email.com" required>
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Password" required>
+        <button class="primary-button wide-button" type="submit">Sign In</button>
+        <p>New user? <a href="{{ url_for('register') }}">Register here</a></p>
+        <small>Admin demo: admin@railconnect.test / admin123</small>
+      </form>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

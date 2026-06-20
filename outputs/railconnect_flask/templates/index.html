@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}RailConnect - Book Train Tickets{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-panel">
+    <div class="hero-copy">
+      <span class="eyebrow">Rail ticketing made simple</span>
+      <h1>Book train tickets across India</h1>
+      <p>Search trains, compare availability, check PNR status, and generate a demo e-ticket in one place.</p>
+      <div class="hero-stats">
+        <span><strong>6</strong> demo trains</span>
+        <span><strong>12</strong> stations</span>
+        <span><strong>24x7</strong> booking</span>
+      </div>
+    </div>
+    <section class="search-box" id="search">
+      <div class="tab-row">
+        <button class="active" type="button">Book Ticket</button>
+        <button type="button">PNR Status</button>
+        <button type="button">Train Schedule</button>
+      </div>
+      <form method="post" action="{{ url_for('search') }}" class="search-grid">
+        <label>
+          From
+          <input name="from" list="stations" value="{{ search_meta.from if search_meta else 'NDLS' }}" placeholder="NDLS - New Delhi">
+        </label>
+        <button class="swap-button" type="button" data-swap-stations aria-label="Swap stations">Swap</button>
+        <label>
+          To
+          <input name="to" list="stations" value="{{ search_meta.to if search_meta else 'HWH' }}" placeholder="HWH - Howrah">
+        </label>
+        <label>
+          Journey Date
+          <input type="date" name="date" value="{{ search_meta.date if search_meta else today }}">
+        </label>
+        <label>
+          Quota
+          <select name="quota">
+            <option>General</option>
+            <option>Tatkal</option>
+            <option>Premium Tatkal</option>
+            <option>Ladies</option>
+          </select>
+        </label>
+        <button class="search-button" type="submit">Search Trains</button>
+        <datalist id="stations">
+          {% for station in stations %}
+            <option value="{{ station }}"></option>
+          {% endfor %}
+        </datalist>
+      </form>
+      <div class="quick-flags">
+        <label><input type="checkbox"> Flexible with date</label>
+        <label><input type="checkbox"> Divyaang concession</label>
+        <label><input type="checkbox"> Train with available berth</label>
+      </div>
+    </section>
+  </div>
+</section>
+
+<section class="service-band">
+  <div><strong>Flight</strong><span>Coming soon</span></div>
+  <div><strong>Hotel</strong><span>Demo module</span></div>
+  <div><strong>Meals</strong><span>Station food</span></div>
+  <div><strong>Tourism</strong><span>Holiday packages</span></div>
+</section>
+
+<section class="content-grid">
+  <div class="results-area">
+    <div class="section-heading">
+      <div>
+        <h2>{% if searched %}Available Trains{% else %}Popular Trains{% endif %}</h2>
+        <p>
+          {% if searched %}
+            {{ search_meta.from }} to {{ search_meta.to }} | {{ search_meta.date }} | {{ search_meta.quota }}
+          {% else %}
+            Try a search or book from popular routes.
+          {% endif %}
+        </p>
+      </div>
+      <div class="filter-pills">
+        <button class="active" data-filter="all">All</button>
+        <button data-filter="Rajdhani">Rajdhani</button>
+        <button data-filter="Shatabdi">Shatabdi</button>
+        <button data-filter="Express">Express</button>
+      </div>
+    </div>
+
+    {% for train in display_trains %}
+      <article class="train-card" data-train-type="{{ train.type }}">
+        <div class="train-head">
+          <div>
+            <h3>{{ train.name }}</h3>
+            <span>#{{ train.id }} | Runs: {{ train.days }}</span>
+          </div>
+          <strong class="train-type">{{ train.type }}</strong>
+        </div>
+        <div class="route-line">
+          <div>
+            <strong>{{ train.dep }}</strong>
+            <span>{{ train.from_name }} ({{ train.from }})</span>
+          </div>
+          <div class="route-mid">
+            <span>{{ train.duration }}</span>
+            <i></i>
+            <small>{{ train.distance }} km</small>
+          </div>
+          <div>
+            <strong>{{ train.arr }}</strong>
+            <span>{{ train.to_name }} ({{ train.to }})</span>
+          </div>
+        </div>
+        <div class="class-row">
+          {% for key, data in train.classes.items() %}
+            {% set inv = inventory.get(train.id ~ ':' ~ (search_meta.date if search_meta else today), {}).get(key, {'confirmed':0,'wl_bookings':0}) %}
+            {% set confirmed = inv.confirmed %}
+            {% set wl_count = inv.wl_bookings %}
+            <a class="class-card {% if confirmed == 0 and wl_count > 0 %}sold-out{% endif %}" href="{{ url_for('book', train_id=train.id, class_key=key, date=(search_meta.date if search_meta else today)) }}">
+              <span>{{ key }} - {{ class_names[key] }}</span>
+              <strong>
+                {% if confirmed > 0 %}AVAILABLE {{ confirmed }}{% elif wl_count > 0 %}WL {{ wl_count }}{% else %}SOLD OUT{% endif %}
+              </strong>
+              <small>Rs. {{ data[0] }}</small>
+            </a>
+          {% endfor %}
+        </div>
+      </article>
+    {% else %}
+      <div class="empty-results">
+        <h3>No trains found for this route</h3>
+        <p>Try NDLS to HWH, NDLS to CDG, NDLS to KOTA, NDLS to MMCT, NDLS to PNBE, or NDLS to YPR.</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  <aside class="side-panel">
+    <section id="pnr" class="utility-card">
+      <h2>PNR Status</h2>
+      <p>Enter demo PNR to check booking details.</p>
+      <div class="inline-form">
+        <input id="pnrInput" placeholder="PNR5628139042">
+        <button id="pnrButton">Check</button>
+      </div>
+      <div class="pnr-result" id="pnrResult"></div>
+    </section>
+
+    <section class="utility-card" id="bookings">
+      <h2>My Bookings</h2>
+      {% if user %}
+        {% for booking in bookings[:3] %}
+          <div class="mini-booking">
+            <strong>{{ booking.train }}</strong>
+            <span>{{ booking.pnr }} | {{ booking.status|title }}</span>
+            <small>{{ booking.route }} | Rs. {{ booking.amount }}</small>
+          </div>
+
+        {% else %}
+          <p>Abhi koi booking nahi hai.</p>
+        {% endfor %}
+      {% else %}
+        <p>Bookings dekhne ke liye login/register karein.</p>
+        <button class="primary-button small-action" data-open-login>Login</button>
+      {% endif %}
+    </section>
+  </aside>
+</section>
+{% endblock %}

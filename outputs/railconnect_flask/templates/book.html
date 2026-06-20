@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Book {{ train.name }}{% endblock %}
+
+{% block content %}
+<script defer src="{{ url_for('static', filename='payment-modal-ui.js') }}"></script>
+<!-- <script defer src="{{ url_for('static', filename='payment-demo.js') }}"></script> -->
+<section class="booking-page">
+  <div class="booking-layout">
+    <form class="booking-card" method="post">
+      <div class="section-heading compact">
+        <div>
+          <h2>Passenger Details</h2>
+          <p>{{ train.name }} #{{ train.id }} | {{ train.from_name }} to {{ train.to_name }}</p>
+        </div>
+        <strong class="train-type">{{ class_key }} - {{ class_name }}</strong>
+      </div>
+
+      <input type="hidden" name="train_id" value="{{ train.id }}">
+      <input type="hidden" name="class_key" value="{{ class_key }}">
+
+      <div class="journey-strip">
+        <div><span>Departure</span><strong>{{ train.dep }}</strong><small>{{ train.from_name }}</small></div>
+        <div><span>Arrival</span><strong>{{ train.arr }}</strong><small>{{ train.to_name }}</small></div>
+        <div><span>Duration</span><strong>{{ train.duration }}</strong><small>{{ train.distance }} km</small></div>
+        <label>
+          Journey Date
+          <input type="date" name="journey_date" value="{{ travel_date }}" required>
+        </label>
+      </div>
+
+<input type="hidden" name="passengers" value="{{ passengers }}">
+      <input type="hidden" name="passengers_count_for_post" value="{{ passengers }}">
+
+      {% for index in range(passengers) %}
+        <div class="passenger-form">
+          <h3>Passenger {{ index + 1 }}</h3>
+          <label>
+            Full Name
+            <input name="passenger_name" value="{{ user.name if index == 0 else '' }}" placeholder="Passenger name" required>
+          </label>
+          <label>
+            Age
+            <input name="age" type="number" min="1" max="120" value="30" required>
+          </label>
+          <label>
+            Gender
+            <select name="gender">
+              <option>Male</option>
+              <option>Female</option>
+              <option>Other</option>
+            </select>
+          </label>
+          <label>
+            Berth Preference
+            <select name="berth">
+              <option>No preference</option>
+              <option>Lower</option>
+              <option>Middle</option>
+              <option>Upper</option>
+              <option>Side Lower</option>
+              <option>Side Upper</option>
+            </select>
+          </label>
+        </div>
+      {% endfor %}
+
+      {% if passengers < 6 %}
+        <div class="passenger-add">
+          <h3>Passengers</h3>
+          <button
+            class="secondary-button"
+            type="button"
+            onclick="window.location.search='passengers='+'{{ passengers + 1 }}'+'&date='+'{{ travel_date }}'"
+          >
+            Add Passenger
+          </button>
+        </div>
+      {% else %}
+        <div class="passenger-add">
+          <h3>Passengers</h3>
+          <p><strong>Max 6 passengers</strong></p>
+        </div>
+      {% endif %}
+
+      <div class="payment-box">
+        <h3>Payment Method</h3>
+        <label><input type="radio" name="payment" value="upi" checked> UPI</label>
+        <label><input type="radio" name="payment" value="card"> Debit/Credit Card</label>
+        <label><input type="radio" name="payment" value="netbanking"> Net Banking</label>
+      </div>
+
+      <button id="payBtn" class="search-button" type="button">Pay Rs. {{ fare.total }} and Book</button>
+      <div id="payStatus" class="print-hidden" style="margin-top:10px; color:#333;"></div>
+
+
+    </form>
+
+    <aside class="fare-card">
+      <h2>Fare Summary</h2>
+      <div><span>Base Fare</span><strong>Rs. {{ fare.base }}</strong></div>
+      <div><span>GST</span><strong>Rs. {{ fare.tax }}</strong></div>
+      <div><span>Convenience Fee</span><strong>Rs. {{ fare.convenience }}</strong></div>
+      <div class="total"><span>Total</span><strong>Rs. {{ fare.total }}</strong></div>
+      <p>Ticket database me save hoga aur PNR generate hoga.</p>
+    </aside>
+  </div>
+</section>
+{% endblock %}
